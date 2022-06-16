@@ -1,0 +1,73 @@
+const express = require("express");
+const app = express();
+
+
+const dotenv = require("dotenv");
+dotenv.config();
+
+
+
+//conexión con la base de datos
+const {connection} = require("../config.db.js");
+
+const getTransfer = (request, response) => {
+    connection.query("SELECT * FROM transfer WHERE id_user=1",
+    (error, results) => {
+        if(error)
+            throw error;
+        response.status(200).json(results);
+    });
+};
+
+//ruta
+app.route("/api/v1/transfer")
+.get(getTransfer);
+
+const getEvent = (request, response) => {
+    connection.query("SELECT * FROM event", 
+    (error, results) => {
+        if(error)
+            throw error;
+        response.status(200).json(results);
+    });
+};
+
+//ruta
+app.route("/event")
+.get(getEvent);
+
+
+const postTransfer = (request, response) => {
+    const {point_sale, event, consecutive, date, point_sale_relationship, event_consecutive_relationship, description, transfer_review_status, id_user} = request.body;
+    connection.query("INSERT INTO transfer (point_sale, event, consecutive, date, point_sale_relationship, event_consecutive_relationship, description, transfer_review_status, id_user) VALUES (?,?,?,?) ", 
+    [point_sale, event, consecutive, date, point_sale_relationship, event_consecutive_relationship,
+        description, transfer_review_status, id_user],
+    (error, results) => {
+        if(error)
+            throw error;
+        response.status(201).json({"Item añadido correctamente": results.affectedRows});
+    });
+};
+
+//ruta
+app.route("/transfer")
+.post(postTransfer);
+
+
+const delTransfer = (request, response) => {
+    const id = request.params.id;
+    connection.query("Delete from carta where id = ?", 
+    [id],
+    (error, results) => {
+        if(error)
+            throw error;
+        response.status(201).json({"Item eliminado":results.affectedRows});
+    });
+};
+
+//ruta
+app.route("/transfer/:id")
+.delete(delTransfer);
+
+
+module.exports = app;
